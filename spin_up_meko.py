@@ -1,5 +1,6 @@
 import argparse
 import paramiko
+import time
 
 class SpinUpMekoCluster:
     def __init__(self, args):
@@ -23,33 +24,56 @@ class SpinUpMekoCluster:
         stdin, stdout, stderr = self.ssh.exec_command('curl -sfL https://get.k3s.io | sh -')
         exit_status = stdout.channel.recv_exit_status()
         if exit_status == 0:
+            print('*****************************************')
             print('Kubernetes cluster successfully deployed!')
+            print('*****************************************')
 
     def install_helm(self):
         stdin, stdout, stderr = self.ssh.exec_command(
             'curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3')
-        exit_status = stdout.channel.recv_exit_status()
+        stdout.channel.recv_exit_status()
         stdin, stdout, stderr = self.ssh.exec_command('chmod 700 get_helm.sh')
-        exit_status = stdout.channel.recv_exit_status()
+        stdout.channel.recv_exit_status()
         stdin, stdout, stderr = self.ssh.exec_command('./get_helm.sh')
         exit_status = stdout.channel.recv_exit_status()
         if exit_status == 0:
+            print('***************************')
             print('Helm successfuly installed!')
+            print('***************************')
 
     def deploy_meko(self):
         stdin, stdout, stderr = self.ssh.exec_command('sudo kubectl create namespace mongodb')
-        exit_status = stdout.channel.recv_exit_status()
+        stdout.channel.recv_exit_status()
         stdin, stdout, stderr = self.ssh.exec_command(
             'sudo helm repo add mongodb https://mongodb.github.io/helm-charts')
-        exit_status = stdout.channel.recv_exit_status()
+        stdout.channel.recv_exit_status()
         stdin, stdout, stderr = self.ssh.exec_command(
             'sudo helm install enterprise-operator mongodb/enterprise-operator --namespace mongodb --kubeconfig /etc/rancher/k3s/k3s.yaml')
-        exit_status = stdout.channel.recv_exit_status()
-        if exit_status == 0:
-            print('MEKO successfuly deployed!')
+        stdout.channel.recv_exit_status()
+
+
+    def confirm_meko_deployment(self):
+        stdin, stdout, stderr = self.ssh.exec_command('sudo kubectl get pods -n mongodb')
+        r = stdout.readlines()
+        try:
+            if 'Running' in r[1]:
+                print('**************************')
+                print('MEKO successfuly deployed!')
+                print('**************************')
+            else:
+                time.sleep(5)
+                self.confirm_meko_deployment()
+        except:
+                time.sleep(5)
+                self.confirm_meko_deployment()
 
     def deploy_mongodb(self):
-        stdin, stdout, stderr = self.ssh.exec_command('sudo kubectl apply -f CRDs/mongoDB.yaml')
+        stdin, stdout, stderr = self.ssh.exec_command('sudo kubectl apply -f mongoDB.yaml -n mongodb')
+        exit_status = stdout.channel.recv_exit_status()
+        if exit_status == 0:
+            print('****************************')
+            print('MEKO test environment ready!')
+            print('****************************')
 
 def parse_args():
     args = argparse.ArgumentParser()
@@ -72,10 +96,10 @@ def main():
     mc.install_helm()
     print('Deploying MEKO via Helm to your Evergreen VM ...')
     mc.deploy_meko()
+    mc.confirm_meko_deployment()
     print('Deploying uploaded CRDs to Kubernetes on your Evergreen VM ...')
-    # mc.deploy_mongodb()
-    print('MEKO test environment ready!')
-
+    mc.deploy_mongodb()
+    
 
 if __name__ == '__main__':
     main()
