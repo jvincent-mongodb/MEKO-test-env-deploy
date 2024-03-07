@@ -15,10 +15,10 @@ class SpinUpMekoCluster:
         self.ssh.connect(self.hostname, self.port, self.username, self.password)
 
     def upload_resources(self):
-        local_path = 'mongoDB.yaml'
-        remote_path = 'mongoDB.yaml'
+        paths = ['mongoDB.yaml','opsManager.yaml']
         sftp = self.ssh.open_sftp()
-        sftp.put(local_path, remote_path)
+        for path in paths:
+            sftp.put(path, path)
         
     def install_k3s(self):
         stdin, stdout, stderr = self.ssh.exec_command('curl -sfL https://get.k3s.io | sh -')
@@ -67,8 +67,10 @@ class SpinUpMekoCluster:
                 time.sleep(5)
                 self.confirm_meko_deployment()
 
-    def deploy_mongodb(self):
+    def deploy_mongodb_crds(self):
         stdin, stdout, stderr = self.ssh.exec_command('sudo kubectl apply -f mongoDB.yaml -n mongodb')
+        exit_status = stdout.channel.recv_exit_status()
+        stdin, stdout, stderr = self.ssh.exec_command('sudo kubectl apply -f opsManager.yaml -n mongodb')
         exit_status = stdout.channel.recv_exit_status()
         if exit_status == 0:
             print('****************************')
@@ -98,7 +100,7 @@ def main():
     mc.deploy_meko()
     mc.confirm_meko_deployment()
     print('Deploying uploaded CRDs to Kubernetes on your Evergreen VM ...')
-    mc.deploy_mongodb()
+    mc.deploy_mongodb_crds()
     
 
 if __name__ == '__main__':
