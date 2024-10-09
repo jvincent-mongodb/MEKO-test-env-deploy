@@ -6,7 +6,7 @@ jobs:
 
     steps:
       - name: build copybara
-        run: git clone https://github.com/google/copybara
+        run: git clone --depth=1 https://github.com/google/copybara
 
 # jobs:
 #   copybara:
