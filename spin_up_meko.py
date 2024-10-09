@@ -51,7 +51,6 @@ class SpinUpMekoCluster:
             'sudo helm install enterprise-operator mongodb/enterprise-operator --namespace mongodb --kubeconfig /etc/rancher/k3s/k3s.yaml')
         stdout.channel.recv_exit_status()
 
-
     def confirm_meko_deployment(self):
         stdin, stdout, stderr = self.ssh.exec_command('sudo kubectl get pods -n mongodb')
         r = stdout.readlines()
