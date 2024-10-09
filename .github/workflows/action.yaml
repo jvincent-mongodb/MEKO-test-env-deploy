@@ -5,6 +5,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - uses: actions/checkout@v4
       - name: clone copybara
         run: git clone --depth=1 https://github.com/google/copybara
       - name: build copybara
