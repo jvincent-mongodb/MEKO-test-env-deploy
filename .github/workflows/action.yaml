@@ -9,8 +9,6 @@ jobs:
         run: git clone --depth=1 https://github.com/google/copybara
       - name: build copybara
         run: cd copybara && docker build -t google/copybara .
-      - name: list files
-        run: ls -a
-      # - name: run copybara
-      #   run: cd .. && ./run-copybara.sh
+      - name: run copybara
+        run: cd copybara && ./run-copybara.sh
         
