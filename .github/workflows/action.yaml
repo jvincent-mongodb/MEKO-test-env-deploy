@@ -1,8 +1,16 @@
 on: [push]
 
 jobs:
-  copybara:
+  print-username:
     runs-on: ubuntu-latest
+
     steps:
-      - name: "build-copybara"
-      - run: /bin/bash -c git clone --depth=1 https://github.com/google/copybara
+      - name: Print the input name to STDOUT
+        run: echo The username is ${{ inputs.username }}
+
+# jobs:
+#   copybara:
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: "build-copybara"
+#       - run: /bin/bash -c git clone --depth=1 https://github.com/google/copybara
