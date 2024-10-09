@@ -5,12 +5,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: build copybara
+      - name: clone copybara
         run: git clone --depth=1 https://github.com/google/copybara
-
-# jobs:
-#   copybara:
-#     runs-on: ubuntu-latest
-#     steps:
-#       - name: "build-copybara"
-#       - run: /bin/bash -c git clone --depth=1 https://github.com/google/copybara
+      - name: build copybara
+        run: cd copybara && docker build -t google/copybara .
+      - name: run copybara
+        run: docker run google/copybara
+        
