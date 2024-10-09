@@ -10,7 +10,7 @@ jobs:
         run: git clone --depth=1 https://github.com/google/copybara
       
       - name: build copybara
-        run: cp .github/workflows/. copybara && cd copybara && docker build -t google/copybara .
+        run: cp -r .github/workflows/. copybara && cd copybara && docker build -t google/copybara .
 
       - name: run copybara
         run: .github/workflows/run-copybara.sh
